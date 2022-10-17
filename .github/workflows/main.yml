@@ -41,7 +41,7 @@ jobs:
           fi
 
           if [[ $GITHUB_REF == refs/tags/* ]]; then
-               GITTAG="${DOCKER_IMAGE}$(echo $GITHUB_REF | sed 's|refs/tags/||g')"
+               GITTAG="${DOCKER_IMAGE}:$(echo $GITHUB_REF | sed 's|refs/tags/||g')"
           fi
 
           if [ -n "${BRANCHTAG}" ] && [ -n "${GITTAG}" ]; then
