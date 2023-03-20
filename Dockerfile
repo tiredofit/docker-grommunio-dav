@@ -1,12 +1,12 @@
 ARG DISTRO="alpine"
-ARG PHP_BASE=8.0
+ARG PHP_BASE=8.2
 
 FROM docker.io/tiredofit/nginx-php-fpm:${DISTRO}-${PHP_BASE} as grommunio-dav-builder
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ARG GROMMUNIO_DAV_VERSION
 
-ENV GROMMUNIO_DAV_VERSION=${GROMMUNIO_DAV_VERSION:-"1.1"} \
+ENV GROMMUNIO_DAV_VERSION=${GROMMUNIO_DAV_VERSION:-"1.2"} \
     GROMMUNIO_DAV_REPO_URL=${GROMMUNIO_DAV_REPO_URL:-"https://github.com/grommunio/grommunio-dav.git"}
 
 COPY build-assets/ /build-assets
@@ -20,12 +20,14 @@ RUN source /assets/functions/00-container && \
                && \
     \
     ### Fetch Source
-    clone_git_repo ${GROMMUNIO_DAV_REPO_URL} ${GROMMUNIO_DAV_VERSION} && \
+    clone_git_repo "${GROMMUNIO_DAV_REPO_URL}" "${GROMMUNIO_DAV_VERSION}" && \
     \
     set +e && \
     if [ -d "/build-assets/src" ] ; then cp -Rp /build-assets/src/* /usr/src/grommunio_dav ; fi; \
     if [ -d "/build-assets/scripts" ] ; then for script in /build-assets/scripts/*.sh; do echo "** Applying $script"; bash $script; done && \ ; fi ; \
     set -e && \
+    \
+    composer install && \
     \
     ### Setup RootFS
     mkdir -p /rootfs/assets/.changelogs && \
