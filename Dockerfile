@@ -1,13 +1,28 @@
 ARG DISTRO="alpine"
-ARG PHP_BASE=8.2
+ARG PHP_VERSION=8.2
 
-FROM docker.io/tiredofit/nginx-php-fpm:${DISTRO}-${PHP_BASE} as grommunio-dav-builder
+FROM docker.io/tiredofit/nginx-php-fpm:${PHP_VERSION}-${DISTRO} as grommunio-dav-builder
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ARG GROMMUNIO_DAV_VERSION
+ARG GROMMUNIO_MAPI_HEADERS_VERSION
 
 ENV GROMMUNIO_DAV_VERSION=${GROMMUNIO_DAV_VERSION:-"1.2"} \
-    GROMMUNIO_DAV_REPO_URL=${GROMMUNIO_DAV_REPO_URL:-"https://github.com/grommunio/grommunio-dav.git"}
+    GROMMUNIO_MAPI_HEADERS_VERSION=${GROMMUNIO_MAPI_HEADERS_VERSION:-"1.1"} \
+    GROMMUNIO_DAV_REPO_URL=${GROMMUNIO_DAV_REPO_URL:-"https://github.com/grommunio/grommunio-dav"} \
+    GROMMUNIO_MAPI_HEADERS_REPO_URL=${GROMMUNIO_MAPI_HEADERS_REPO_URL:-"https://github.com/grommunio/mapi-header-php"} \
+    PHP_ENABLE_GETTEXT=TRUE \
+    PHP_ENABLE_MAPI=TRUE \
+    PHP_ENABLE_MBSTRING=TRUE \
+    PHP_ENABLE_SIMPLEXML=TRUE \
+    PHP_ENABLE_SOAP=TRUE \
+    PHP_ENABLE_POSIX=TRUE \
+    PHP_ENABLE_PDO=TRUE \
+    PHP_ENABLE_PDO_SQLITE=TRUE \
+    PHP_ENABLE_REDIS=TRUE \
+    PHP_ENABLE_SHMOP=TRUE \
+    PHP_ENABLE_XMLWRITER=TRUE \
+    PHP_ENABLE_TOKENIZER=TRUE
 
 COPY build-assets/ /build-assets
 
@@ -19,11 +34,23 @@ RUN source /assets/functions/00-container && \
                git \
                && \
     \
+    ##### Fetch Grommunio MAPI PHP Headers
+    clone_git_repo "${GROMMUNIO_MAPI_HEADERS_REPO_URL}" "${GROMMUNIO_MAPI_HEADERS_VERSION}" /usr/share/php-mapi && \
+    echo "Gromunio MAPI PHP Headers ${GROMMUNIO_MAPI_HEADERS_VERSION} built from ${GROMMUNIO_MAPI_HEADERS_REPO_URL} on $(date +'%Y-%m-%d %H:%M:%S')" > /assets/.changelogs/grommunio-mapi-headers.version && \
+    echo "Commit: $(cd /usr/share/php-mapi ; echo $(git rev-parse HEAD))" >> /assets/.changelogs/grommunio-mapi-headers.version && \
+    rm -rf \
+            /usr/share/php-mapi/.git* \
+            /usr/share/php-mapi/.phpcs \
+            /usr/share/php-mapi/.yml \
+            /usr/share/php-mapi/Makefile \
+            && \
+    chown "${NGINX_USER}":"${NGINX_GROUP}" /usr/share/php-mapi && \
+    \
     ### Fetch Source
-    clone_git_repo "${GROMMUNIO_DAV_REPO_URL}" "${GROMMUNIO_DAV_VERSION}" && \
+    clone_git_repo "${GROMMUNIO_DAV_REPO_URL}" "${GROMMUNIO_DAV_VERSION}" /www/grommunio-dav && \
     \
     set +e && \
-    if [ -d "/build-assets/src" ] ; then cp -Rp /build-assets/src/* /usr/src/grommunio_dav ; fi; \
+    if [ -d "/build-assets/src" ] ; then cp -Rp /build-assets/src/* /www/grommunio-dav ; fi; \
     if [ -d "/build-assets/scripts" ] ; then for script in /build-assets/scripts/*.sh; do echo "** Applying $script"; bash $script; done && \ ; fi ; \
     set -e && \
     \
@@ -44,6 +71,9 @@ RUN source /assets/functions/00-container && \
     ### Cleanup and Compress Package
     echo "Gromunio Dav ${GROMMUNIO_DAV_VERSION} built from ${GROMMUNIO_DAV_REPO_URL} on $(date +'%Y-%m-%d %H:%M:%S')" > /rootfs/assets/.changelogs/grommunio-dav.version && \
     echo "Commit: $(cd /usr/src/grommunio-dav ; echo $(git rev-parse HEAD))" >> /rootfs/assets/.changelogs/grommunio-dav.version && \
+    echo "Built with Gromunio MAPI PHP Headers ${GROMMUNIO_MAPI_HEADERS_VERSION} built from ${GROMMUNIO_MAPI_HEADERS_REPO_URL} on $(date +'%Y-%m-%d %H:%M:%S')" > /rootfs/assets/.changelogs/grommunio-dav.version && \
+    echo "Built with PHP ${PHP_VERSION} on ${DISTRO}" > /rootfs/assets/.changelogs/grommunio-dav.version && \
+    \
     env | grep ^GROMMUNIO | sort >> /rootfs/assets/.changelogs/grommunio-dav.version && \
     cd /rootfs/ && \
     find . -name .git -type d -print0|xargs -0 rm -rf -- && \
