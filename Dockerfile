@@ -28,11 +28,11 @@ COPY build-assets/ /build-assets
 
 RUN source /assets/functions/00-container && \
     set -ex && \
-    apk update && \
-    apk upgrade && \
-    apk add -t .grommunio-dav-build-deps \
-               git \
-               && \
+    package update && \
+    package upgrade && \
+    package install .grommunio-dav-build-deps \
+                        git \
+                        && \
     \
     ##### Fetch Grommunio MAPI PHP Headers
     clone_git_repo "${GROMMUNIO_MAPI_HEADERS_REPO_URL}" "${GROMMUNIO_MAPI_HEADERS_VERSION}" /usr/share/php-mapi && \
@@ -81,8 +81,10 @@ RUN source /assets/functions/00-container && \
     tar cavf /grommunio-dav/grommunio-dav.tar.zst . &&\
     \
     ### Cleanup
-    apk del .grommunio-dav-build-deps && \
-    rm -rf /usr/src/* /var/cache/apk/*
+    package remove .grommunio-dav-build-deps && \
+    package cleanup && \
+    rm -rf \
+            /usr/src/*
 
 FROM scratch
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"

@@ -1,3 +1,6 @@
+### Application Level Image CI - Grommunio DAV
+### Dave Conroy <tiredofit@github>
+
 name: "manual_build_image"
 
 on:
@@ -6,11 +9,19 @@ on:
       Manual Build:
         description: 'Manual Build'
         required: false
-
 jobs:
-  build:
-    uses: tiredofit/github_actions/.github/workflows/default_amd64.yml@main
-    #uses: tiredofit/github_actions/.github/workflows/default_amd64.yml@main
-    #uses: tiredofit/github_actions/.github/workflows/default_amd64_armv7_arm64.yml@main
-    #uses: tiredofit/github_actions/.github/workflows/default_amd64_arm64.yml@main
+  php74-alpine:
+    uses: tiredofit/github_actions/.github/workflows/php74_alpine_amd64.yml@main
+    secrets: inherit
+  php80-alpine:
+    uses: tiredofit/github_actions/.github/workflows/php80_alpine_amd64.yml@main
+    secrets: inherit
+  php81-alpine:
+    uses: tiredofit/github_actions/.github/workflows/php81_alpine_amd64.yml@main
+    secrets: inherit
+  php82-alpine:
+    uses: tiredofit/github_actions/.github/workflows/php82_alpine_amd64.yml@main
+    secrets: inherit
+  php82-debian-bullseye:
+    uses: tiredofit/github_actions/.github/workflows/php82_debian_bullseye_amd64.yml@main
     secrets: inherit
