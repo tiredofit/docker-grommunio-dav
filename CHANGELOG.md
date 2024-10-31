@@ -1,3 +1,10 @@
+## 1.0.3 2024-10-30 <dave at tiredofit dot ca>
+
+   ### Added
+      - Grommunio DAV 94260cb4c7d7249af282799521a810f956671fe2
+      - MAPI Headers 1.4
+
+
 ## 1.0.2 2023-06-30 <dave at tiredofit dot ca>
 
    ### Added
