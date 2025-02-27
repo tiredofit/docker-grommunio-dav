@@ -1,3 +1,10 @@
+## 1.0.4 2025-02-27 <dave at tiredofit dot ca>
+
+   ### Added
+      - Grommunio Dav 1.4
+      - Mapi Headers 1.6
+
+
 ## 1.0.3 2024-10-30 <dave at tiredofit dot ca>
 
    ### Added
